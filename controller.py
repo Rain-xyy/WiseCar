@@ -9,7 +9,7 @@ class Controller():
         self.acc_value = 25
 
     def accelerator(self, left_speed = 1, right_speed = 1):
-        self.car.changeSpeed(self.pwm1, self.acc_value * left_speed)
+        self.car.changeSpeed(self.pwm1, self.acc_value * left_speed * 0.85)
         self.car.changeSpeed(self.pwm2, self.acc_value * right_speed)
 
     def turnLeft(self):

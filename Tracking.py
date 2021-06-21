@@ -36,3 +36,4 @@ class Tracking():
 
     def destroy(self):
         GPIO.cleanup()
+

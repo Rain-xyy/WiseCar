@@ -1,3 +1,5 @@
+import random
+
 from motor import Motor
 from controller import Controller
 from Distance import Distance
@@ -31,48 +33,58 @@ exit_ultra = 1
 def ultra_control():
     while True:
         while not exit_ultra:
-            infra_control()
+            smart_car.acc_value = 20
+            smart_car.accelerator()
 
-            smart_car.accelerator(1, 1)
-            dis = ultr.distance()  # 获取超声波传感器的距离
-            print("distance = ", dis)
-
-            #超声波测距控制
-            #如果距离小于20cm, 则停车，然后倒车
-            if dis < 20:
-                smart_car.stop()
+            dis = ultr.distance()
+            if(dis < 10): #后退0.3s
                 smart_car.backword()
-                time.sleep(1)
-                smart_car.stop()
+            elif(dis < 20):
+                infra_left_value, infra_right_value = infrared.infra_detect()
+                # print(infra_left_value, " ", infra_right_value)
+
+                # 红外避障控制
+                if infra_left_value == 0:  # 左侧有障碍物
+                    smart_car.turnRight()
+
+                if infra_right_value == 0:  # 右侧有障碍物
+                    smart_car.turnLeft()
+                else:                       #随即向左或向右偏移
+                    val = random.random()
+                    if val > 0.5:
+                        smart_car.turnRight()
+                    else:
+                        smart_car.turnLeft()
             else:
                 smart_car.forward()
+
             time.sleep(0.3)
 
-def infra_control():
-    smart_car.accelerator(0.5, 0.5)
-    infra_left_value, infra_right_value = infrared.infra_detect()
-    #print(infra_left_value, " ", infra_right_value)
 
-    #红外避障控制
-    if infra_left_value == 0:   #左侧有障碍物
-        smart_car.turnRight()
-        time.sleep(1)  # 右转0.5s
-        smart_car.stop()
-
-
-    if infra_right_value == 1: #右侧有障碍物
-        smart_car.turnLeft()
-        time.sleep(1)  #左转0.5s
-        smart_car.stop()
-    time.sleep(0.3)
+# def infra_control():
+#     smart_car.accelerator(0.5, 0.5)
+#     infra_left_value, infra_right_value = infrared.infra_detect()
+#     #print(infra_left_value, " ", infra_right_value)
+#
+#     #红外避障控制
+#     if infra_left_value == 0:   #左侧有障碍物
+#         smart_car.turnRight()
+#         time.sleep(0.5)  # 右转0.5s
+#         smart_car.stop()
+#
+#
+#     if infra_right_value == 1: #右侧有障碍物
+#         smart_car.turnLeft()
+#         time.sleep(0.5)  #左转0.5s
+#         smart_car.stop()
 
 exit_tracking = 1 #是否退出小车循迹的while循环的标志，为0则不退出循迹
 def trackibg_control():
     #红外传感器，控制小车沿黑线自动行进
     while True:
-        time.sleep(0.3)
+        time.sleep(0.1)
         while not exit_tracking:
-            smart_car.acc_value = 40 #占空比的基值为40
+            smart_car.acc_value = 30 #占空比的基值为10
             tracking_left_value, tracking_right_value = tracking.tracking_detect()
             #print(tracking_left_value, " ", tracking_right_value)
             if tracking_left_value == 0 and tracking_right_value == 0: #左右都没有检测到红外反射，停车
@@ -89,6 +101,7 @@ def trackibg_control():
             if tracking_left_value == 1 and tracking_right_value == 1: #左右都能检测到红外反射，前进
                 smart_car.accelerator() #左右车速一致
                 smart_car.forward()
+
 
 
 if __name__ == "__main__":
